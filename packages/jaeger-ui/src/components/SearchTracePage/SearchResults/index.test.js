@@ -20,6 +20,7 @@ import * as markers from './index.markers';
 import ResultItem from './ResultItem';
 import ScatterPlot from './ScatterPlot';
 import LoadingIndicator from '../../common/LoadingIndicator';
+import DiffSelection from './DiffSelection';
 
 describe('<SearchResults>', () => {
   let wrapper;
@@ -46,6 +47,16 @@ describe('<SearchResults>', () => {
   it('shows a loading indicator if loading traces', () => {
     wrapper.setProps({ loading: true });
     expect(wrapper.find(LoadingIndicator).length).toBe(1);
+  });
+
+  it('hide scatter plot if queryparam hideGraph', () => {
+    wrapper.setProps({ hideGraph: true });
+    expect(wrapper.find(ScatterPlot).length).toBe(0);
+  });
+
+  it('hide DiffSelection if queryparam disableComparision', () => {
+    wrapper.setProps({ disableComparision: true });
+    expect(wrapper.find(DiffSelection).length).toBe(0);
   });
 
   describe('search finished with results', () => {

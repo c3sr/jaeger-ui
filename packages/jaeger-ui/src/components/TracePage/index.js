@@ -20,9 +20,10 @@ import _mapValues from 'lodash/mapValues';
 import _maxBy from 'lodash/maxBy';
 import _values from 'lodash/values';
 import { connect } from 'react-redux';
+import queryString from 'query-string';
 import type { RouterHistory, Match } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import { Input } from 'antd';
+import { Input, Button } from 'antd';
 
 import ArchiveNotifier from './ArchiveNotifier';
 import { actions as archiveActions } from './ArchiveNotifier/duck';
@@ -58,6 +59,8 @@ type TracePageProps = {
   history: RouterHistory,
   id: string,
   trace: ?FetchedTrace,
+  isEmbed?: boolean,
+  mapCollapsed?: boolean,
 };
 
 type TracePageState = {
@@ -157,6 +160,9 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
       const { trace } = nextProps;
       this._scrollManager.setTrace(trace && trace.data);
     }
+    if (nextProps.mapCollapsed) {
+      this.setState({ slimView: true });
+    }
   }
 
   componentDidUpdate({ id: prevID }: TracePageProps) {
@@ -213,7 +219,7 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
     }
   };
 
-  filterSpans = (textFilter: string) => {
+  filterSpans: string => ?Set<string> = (textFilter: string) => {
     const spans = this.props.trace && this.props.trace.data && this.props.trace.data.spans;
     if (!spans) return null;
 
@@ -258,9 +264,7 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
       span.logs.some(log => isTextInKeyValues(log.fields)) ||
       isTextInKeyValues(span.process.tags);
 
-    // declare as const because need to disambiguate the type
-    const rv: Set<string> = new Set(spans.filter(isSpanAMatch).map((span: Span) => span.spanID));
-    return rv;
+    return new Set(spans.filter(isSpanAMatch).map((span: Span) => span.spanID));
   };
 
   updateTextFilter = (textFilter: string) => {
@@ -326,8 +330,16 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
     }
   }
 
+  goBackSearch = () => {
+    this.props.history.goBack();
+  };
+
+  goFullView = () => {
+    window.open(prefixUrl(`/trace/${this.props.id.toLowerCase()}`), '_blank');
+  };
+
   render() {
-    const { archiveEnabled, archiveTraceState, trace } = this.props;
+    const { archiveEnabled, archiveTraceState, trace, isEmbed } = this.props;
     const { slimView, headerHeight, textFilter, viewRange, findMatchesIDs } = this.state;
     if (!trace || trace.state === fetchedState.LOADING) {
       return <LoadingIndicator className="u-mt-vast" centered />;
@@ -341,6 +353,12 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
     const numberOfServices = new Set(_values(processes).map(p => p.serviceName)).size;
     return (
       <div>
+        {isEmbed && (
+          <div>
+            <Button onClick={this.goBackSearch}>Go back</Button>
+            <Button onClick={this.goFullView}>Show full view</Button>
+          </div>
+        )}
         {archiveEnabled && (
           <ArchiveNotifier acknowledge={this.acknowledgeArchive} archivedState={archiveTraceState} />
         )}
@@ -397,7 +415,10 @@ export function mapStateToProps(state: ReduxState, ownProps: { match: Match }) {
   const trace = id ? state.trace.traces[id] : null;
   const archiveTraceState = id ? state.archive[id] : null;
   const archiveEnabled = Boolean(state.config.archiveEnabled);
-  return { archiveEnabled, archiveTraceState, id, trace };
+  const query = queryString.parse(state.router.location.search);
+  const isEmbed = 'embed' in query;
+  const mapCollapsed = 'mapCollapsed' in query;
+  return { archiveEnabled, archiveTraceState, id, trace, isEmbed, mapCollapsed };
 }
 
 // export for tests

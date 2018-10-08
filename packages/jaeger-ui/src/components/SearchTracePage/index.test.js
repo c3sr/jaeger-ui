@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import prefixUrl from '../../utils/prefix-url';
+
 jest.mock('redux-form', () => {
   function reduxForm() {
     return component => component;
@@ -32,6 +34,7 @@ import { shallow, mount } from 'enzyme';
 import store from 'store';
 
 import { SearchTracePageImpl as SearchTracePage, mapStateToProps } from './index';
+import { Button } from 'antd';
 import SearchForm from './SearchForm';
 import LoadingIndicator from '../common/LoadingIndicator';
 import { fetchedState } from '../../constants';
@@ -48,6 +51,8 @@ describe('<SearchTracePage>', () => {
     traceResults = [{ traceID: 'a', spans: [], processes: {} }, { traceID: 'b', spans: [], processes: {} }];
     props = {
       traceResults,
+      isEmbed: false,
+      disableComparision: false,
       isHomepage: false,
       loadingServices: false,
       loadingTraces: false,
@@ -100,6 +105,28 @@ describe('<SearchTracePage>', () => {
     wrapper.setProps({ isHomepage: true, traceResults: [] });
     expect(wrapper.find('.js-test-logo').length).toBe(1);
   });
+
+  it('shows button with a link to the Search page if is embed', () => {
+    wrapper.setProps({ isEmbed: true });
+    expect(wrapper.find(Button).length).toBe(1);
+  });
+
+  it('hide SearchForm if is embed', () => {
+    wrapper.setProps({ isEmbed: true });
+    expect(wrapper.find(SearchForm).length).toBe(0);
+  });
+
+  it('hide logo if is embed', () => {
+    wrapper.setProps({ isEmbed: true });
+    expect(wrapper.find('.js-test-logo').length).toBe(0);
+  });
+
+  it('open a window when goFullView is called', () => {
+    wrapper.setProps({ query: { embed: 'embed', service: 'jaeger-query' } });
+    global.open = jest.fn();
+    wrapper.instance().goFullView();
+    expect(global.open).toBeCalledWith(prefixUrl('/search?service=jaeger-query'), '_blank');
+  });
 });
 
 describe('mapStateToProps()', () => {
@@ -140,6 +167,10 @@ describe('mapStateToProps()', () => {
     expect(diffCohort[0].data.traceID).toBe(trace.traceID);
 
     expect(rest).toEqual({
+      isEmbed: false,
+      hideGraph: false,
+      disableComparision: false,
+      query: {},
       isHomepage: true,
       // the redux-form `formValueSelector` mock returns `null` for "sortBy"
       sortTracesBy: null,
