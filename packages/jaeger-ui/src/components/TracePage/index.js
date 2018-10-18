@@ -23,7 +23,7 @@ import { connect } from 'react-redux';
 import queryString from 'query-string';
 import type { RouterHistory, Match } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import { Input, Button } from 'antd';
+import { Input } from 'antd';
 
 import ArchiveNotifier from './ArchiveNotifier';
 import { actions as archiveActions } from './ArchiveNotifier/duck';
@@ -60,6 +60,8 @@ type TracePageProps = {
   id: string,
   trace: ?FetchedTrace,
   isEmbed?: boolean,
+  minimap?: boolean,
+  details?: boolean,
   mapCollapsed?: boolean,
 };
 
@@ -339,7 +341,7 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
   };
 
   render() {
-    const { archiveEnabled, archiveTraceState, trace, isEmbed } = this.props;
+    const { archiveEnabled, archiveTraceState, trace, isEmbed, minimap, details } = this.props;
     const { slimView, headerHeight, textFilter, viewRange, findMatchesIDs } = this.state;
     if (!trace || trace.state === fetchedState.LOADING) {
       return <LoadingIndicator className="u-mt-vast" centered />;
@@ -353,12 +355,6 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
     const numberOfServices = new Set(_values(processes).map(p => p.serviceName)).size;
     return (
       <div>
-        {isEmbed && (
-          <div>
-            <Button onClick={this.goBackSearch}>Go back</Button>
-            <Button onClick={this.goFullView}>Show full view</Button>
-          </div>
-        )}
         {archiveEnabled && (
           <ArchiveNotifier acknowledge={this.acknowledgeArchive} archivedState={archiveTraceState} />
         )}
@@ -381,9 +377,13 @@ export class TracePageImpl extends React.PureComponent<TracePageProps, TracePage
             updateTextFilter={this.updateTextFilter}
             archiveButtonVisible={archiveEnabled}
             onArchiveClicked={this.archiveTrace}
+            onGoBackClicked={this.goBackSearch}
+            onGoFullViewClicked={this.goFullView}
+            embed={isEmbed}
+            details={details}
             ref={this._searchBar}
           />
-          {!slimView && (
+          {((!slimView && !isEmbed) || (isEmbed && minimap)) && (
             <SpanGraph
               trace={data}
               viewRange={viewRange}
@@ -417,8 +417,10 @@ export function mapStateToProps(state: ReduxState, ownProps: { match: Match }) {
   const archiveEnabled = Boolean(state.config.archiveEnabled);
   const query = queryString.parse(state.router.location.search);
   const isEmbed = 'embed' in query;
+  const minimap = 'minimap' in query;
+  const details = 'details' in query;
   const mapCollapsed = 'mapCollapsed' in query;
-  return { archiveEnabled, archiveTraceState, id, trace, isEmbed, mapCollapsed };
+  return { archiveEnabled, archiveTraceState, id, trace, isEmbed, minimap, details, mapCollapsed };
 }
 
 // export for tests

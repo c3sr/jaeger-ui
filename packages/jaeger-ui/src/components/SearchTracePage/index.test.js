@@ -34,7 +34,6 @@ import { shallow, mount } from 'enzyme';
 import store from 'store';
 
 import { SearchTracePageImpl as SearchTracePage, mapStateToProps } from './index';
-import { Button } from 'antd';
 import SearchForm from './SearchForm';
 import LoadingIndicator from '../common/LoadingIndicator';
 import { fetchedState } from '../../constants';
@@ -104,11 +103,6 @@ describe('<SearchTracePage>', () => {
   it('shows the logo prior to searching', () => {
     wrapper.setProps({ isHomepage: true, traceResults: [] });
     expect(wrapper.find('.js-test-logo').length).toBe(1);
-  });
-
-  it('shows button with a link to the Search page if is embed', () => {
-    wrapper.setProps({ isEmbed: true });
-    expect(wrapper.find(Button).length).toBe(1);
   });
 
   it('hide SearchForm if is embed', () => {

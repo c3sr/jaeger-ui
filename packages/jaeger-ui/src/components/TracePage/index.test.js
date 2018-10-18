@@ -39,7 +39,6 @@ import * as track from './index.track';
 import { reset as resetShortcuts } from './keyboard-shortcuts';
 import { cancel as cancelScroll } from './scroll-page';
 import SpanGraph from './SpanGraph';
-import { Button } from 'antd';
 import TracePageHeader from './TracePageHeader';
 import { trackSlimHeaderToggle } from './TracePageHeader.track';
 import TraceTimelineViewer from './TraceTimelineViewer';
@@ -157,11 +156,6 @@ describe('<TracePage>', () => {
   it('collapse map if queryparam mapCollapsed', () => {
     wrapper.setProps({ mapCollapsed: true });
     expect(wrapper.find(SpanGraph).length).toBe(0);
-  });
-
-  it('show buttons with links to the full site and search if is embed', () => {
-    wrapper.setProps({ isEmbed: true });
-    expect(wrapper.find(Button).length).toBe(2);
   });
 
   it('open a window when goFullView is called', () => {
@@ -399,6 +393,8 @@ describe('mapStateToProps()', () => {
       id,
       archiveEnabled: false,
       isEmbed: false,
+      details: false,
+      minimap: false,
       mapCollapsed: false,
       archiveTraceState: undefined,
       trace: { data: {}, state: fetchedState.DONE },

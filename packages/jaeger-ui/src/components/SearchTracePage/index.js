@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React, { Component } from 'react';
-import { Col, Row, Button } from 'antd';
+import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
 import { connect } from 'react-redux';
@@ -102,7 +102,6 @@ export class SearchTracePageImpl extends Component {
             </Col>
           )}
           <Col span={18} className="SearchTracePage--column">
-            {isEmbed && <Button onClick={this.goFullView}>Show full view</Button>}
             {showErrors && (
               <div className="js-test-error-message">
                 <h2>There was an error querying for traces:</h2>
@@ -118,6 +117,7 @@ export class SearchTracePageImpl extends Component {
                 cohortRemoveTrace={cohortRemoveTrace}
                 diffCohort={diffCohort}
                 skipMessage={isHomepage}
+                onGoFullClicked={this.goFullView}
                 traces={traceResults}
                 isEmbed={isEmbed}
                 hideGraph={hideGraph}

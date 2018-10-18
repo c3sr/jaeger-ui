@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import * as React from 'react';
-import { Select } from 'antd';
+import { Button, Select } from 'antd';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import DiffSelection from './DiffSelection';
@@ -41,6 +41,7 @@ type SearchResultsProps = {
   hideGraph?: boolean,
   disableComparision?: boolean,
   loading: boolean,
+  onGoFullClicked: () => void,
   maxTraceDuration: number,
   skipMessage?: boolean,
   traces: TraceSummary[],
@@ -110,7 +111,14 @@ export default class SearchResults extends React.PureComponent<SearchResultsProp
         </React.Fragment>
       );
     }
-    const { goToTrace, isEmbed, hideGraph, disableComparision, maxTraceDuration } = this.props;
+    const {
+      goToTrace,
+      isEmbed,
+      hideGraph,
+      disableComparision,
+      onGoFullClicked,
+      maxTraceDuration,
+    } = this.props;
     const cohortIds = new Set(diffCohort.map(datum => datum.id));
     return (
       <div>
@@ -134,6 +142,13 @@ export default class SearchResults extends React.PureComponent<SearchResultsProp
             )}
             <div className="SearchResults--headerOverview">
               <SelectSort />
+              {isEmbed && (
+                <label className="ub-right">
+                  <Button className="ub-mr2 ub-flex ub-items-center" onClick={onGoFullClicked}>
+                    View Results
+                  </Button>
+                </label>
+              )}
               <h2 className="ub-m0">
                 {traces.length} Trace{traces.length > 1 && 's'}
               </h2>
