@@ -52,13 +52,16 @@ export class PageImpl extends React.Component<Props> {
   }
 
   render() {
+    const isEmbed = this.props.search.includes('embed');
     return (
       <div>
         <Helmet title="Jaeger UI" />
         <Layout>
-          <Header className="Page--topNav">
-            <TopNav />
-          </Header>
+          {!isEmbed && (
+            <Header className="Page--topNav">
+              <TopNav />
+            </Header>
+          )}
           <Content className="Page--content">{this.props.children}</Content>
         </Layout>
       </div>

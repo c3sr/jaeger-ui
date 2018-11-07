@@ -15,9 +15,10 @@
 // limitations under the License.
 
 import * as React from 'react';
-import { Button, Dropdown, Icon, Input, Menu } from 'antd';
+import { Button, Dropdown, Icon, Input, Menu, Divider } from 'antd';
 import IoChevronDown from 'react-icons/lib/io/chevron-down';
 import IoChevronRight from 'react-icons/lib/io/chevron-right';
+import IoChevronLeft from 'react-icons/lib/io/chevron-left';
 import IoIosFilingOutline from 'react-icons/lib/io/ios-filing-outline';
 import { Link } from 'react-router-dom';
 
@@ -45,6 +46,10 @@ type TracePageHeaderProps = {
   resultCount: number,
   archiveButtonVisible: boolean,
   onArchiveClicked: () => void,
+  onGoBackClicked: () => void,
+  onGoFullViewClicked: () => void,
+  embed: boolean,
+  details: boolean,
   // these props are used by the `HEADER_ITEMS`
   // eslint-disable-next-line react/no-unused-prop-types
   timestamp: number,
@@ -104,6 +109,8 @@ export function TracePageHeaderFn(props: TracePageHeaderProps) {
     name,
     slimView,
     onSlimViewClicked,
+    onGoBackClicked,
+    onGoFullViewClicked,
     updateTextFilter,
     textFilter,
     prevResult,
@@ -111,6 +118,8 @@ export function TracePageHeaderFn(props: TracePageHeaderProps) {
     clearSearch,
     resultCount,
     forwardedRef,
+    embed,
+    details,
   } = props;
 
   if (!traceID) {
@@ -170,38 +179,74 @@ export function TracePageHeaderFn(props: TracePageHeaderProps) {
     },
   ];
 
+  const embedComponent = (
+    <div className="TracePageHeader--titleRowEmbed">
+      <a className="ub-mr2 ub-flex ub-items-center" onClick={onGoBackClicked}>
+        <IoChevronLeft className="ub-mr2" />Go back
+      </a>
+      <Divider type="vertical" />
+      <h1 className="TracePageHeader--titleEmbed ub-flex-auto ub-mr2 ub-items-center">
+        {name || FALLBACK_TRACE_NAME}
+      </h1>
+      <a className="ub-mr2 ub-flex ub-items-center" onClick={onGoFullViewClicked}>
+        View Trace
+      </a>
+      <TracePageSearchBar
+        updateTextFilter={updateTextFilter}
+        textFilter={textFilter}
+        prevResult={prevResult}
+        nextResult={nextResult}
+        clearSearch={clearSearch}
+        resultCount={resultCount}
+        ref={forwardedRef}
+      />
+    </div>
+  );
+
   return (
     <header>
-      <div className="TracePageHeader--titleRow">
-        <a className="ub-flex-auto ub-mr2" onClick={onSlimViewClicked} role="switch" aria-checked={!slimView}>
-          <h1 className="TracePageHeader--title ub-flex ub-items-center">
-            {slimView ? <IoChevronRight className="ub-mr2" /> : <IoChevronDown className="ub-mr2" />}
-            {name || FALLBACK_TRACE_NAME}
-          </h1>
-        </a>
-        <KeyboardShortcutsHelp className="ub-mr2" />
-        <TracePageSearchBar
-          updateTextFilter={updateTextFilter}
-          textFilter={textFilter}
-          prevResult={prevResult}
-          nextResult={nextResult}
-          clearSearch={clearSearch}
-          resultCount={resultCount}
-          ref={forwardedRef}
-        />
-        <Dropdown overlay={viewMenu}>
-          <Button className="ub-mr2">
-            View Options <Icon type="down" />
-          </Button>
-        </Dropdown>
-        {archiveButtonVisible && (
-          <Button className="ub-mr2 ub-flex ub-items-center" onClick={onArchiveClicked}>
-            <IoIosFilingOutline className="TracePageHeader--archiveIcon" />
-            Archive Trace
-          </Button>
-        )}
-      </div>
-      {!slimView && <LabeledList className="TracePageHeader--overviewItems" items={overviewItems} />}
+      {embed ? (
+        embedComponent
+      ) : (
+        <div className="TracePageHeader--titleRow">
+          <a
+            className="ub-flex-auto ub-mr2"
+            onClick={onSlimViewClicked}
+            role="switch"
+            aria-checked={!slimView}
+          >
+            <h1 className="TracePageHeader--title ub-flex ub-items-center">
+              {slimView ? <IoChevronRight className="ub-mr2" /> : <IoChevronDown className="ub-mr2" />}
+              {name || FALLBACK_TRACE_NAME}
+            </h1>
+          </a>
+          <KeyboardShortcutsHelp className="ub-mr2" />
+          <TracePageSearchBar
+            updateTextFilter={updateTextFilter}
+            textFilter={textFilter}
+            prevResult={prevResult}
+            nextResult={nextResult}
+            clearSearch={clearSearch}
+            resultCount={resultCount}
+            ref={forwardedRef}
+          />
+          <Dropdown overlay={viewMenu}>
+            <Button className="ub-mr2">
+              View Options <Icon type="down" />
+            </Button>
+          </Dropdown>
+
+          {archiveButtonVisible && (
+            <Button className="ub-mr2 ub-flex ub-items-center" onClick={onArchiveClicked}>
+              <IoIosFilingOutline className="TracePageHeader--archiveIcon" />
+              Archive Trace
+            </Button>
+          )}
+        </div>
+      )}
+      {((!slimView && !embed) || (embed && details)) && (
+        <LabeledList className="TracePageHeader--overviewItems" items={overviewItems} />
+      )}
     </header>
   );
 }

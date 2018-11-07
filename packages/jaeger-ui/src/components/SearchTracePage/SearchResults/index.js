@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import * as React from 'react';
-import { Select } from 'antd';
+import { Button, Select } from 'antd';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import DiffSelection from './DiffSelection';
@@ -37,7 +37,11 @@ type SearchResultsProps = {
   cohortRemoveTrace: string => void,
   diffCohort: FetchedTrace[],
   goToTrace: string => void,
+  isEmbed?: boolean,
+  hideGraph?: boolean,
+  disableComparision?: boolean,
   loading: boolean,
+  onGoFullClicked: () => void,
   maxTraceDuration: number,
   skipMessage?: boolean,
   traces: TraceSummary[],
@@ -107,28 +111,44 @@ export default class SearchResults extends React.PureComponent<SearchResultsProp
         </React.Fragment>
       );
     }
-    const { goToTrace, maxTraceDuration } = this.props;
+    const {
+      goToTrace,
+      isEmbed,
+      hideGraph,
+      disableComparision,
+      onGoFullClicked,
+      maxTraceDuration,
+    } = this.props;
     const cohortIds = new Set(diffCohort.map(datum => datum.id));
     return (
       <div>
         <div>
           <div className="SearchResults--header">
-            <div className="ub-p3">
-              <ScatterPlot
-                data={traces.map(t => ({
-                  x: t.startTime,
-                  y: t.duration,
-                  traceID: t.traceID,
-                  size: t.spans.length,
-                  name: t.traceName,
-                }))}
-                onValueClick={t => {
-                  goToTrace(t.traceID);
-                }}
-              />
-            </div>
+            {!hideGraph && (
+              <div className="ub-p3">
+                <ScatterPlot
+                  data={traces.map(t => ({
+                    x: t.startTime,
+                    y: t.duration,
+                    traceID: t.traceID,
+                    size: t.spans.length,
+                    name: t.traceName,
+                  }))}
+                  onValueClick={t => {
+                    goToTrace(t.traceID);
+                  }}
+                />
+              </div>
+            )}
             <div className="SearchResults--headerOverview">
               <SelectSort />
+              {isEmbed && (
+                <label className="ub-right">
+                  <Button className="ub-mr2 ub-flex ub-items-center" onClick={onGoFullClicked}>
+                    View Results
+                  </Button>
+                </label>
+              )}
               <h2 className="ub-m0">
                 {traces.length} Trace{traces.length > 1 && 's'}
               </h2>
@@ -136,16 +156,17 @@ export default class SearchResults extends React.PureComponent<SearchResultsProp
           </div>
         </div>
         <div>
-          {diffSelection}
+          {!disableComparision && diffSelection}
           <ul className="ub-list-reset">
             {traces.map(trace => (
               <li className="ub-my3" key={trace.traceID}>
                 <ResultItem
                   durationPercent={getPercentageOfDuration(trace.duration, maxTraceDuration)}
                   isInDiffCohort={cohortIds.has(trace.traceID)}
-                  linkTo={prefixUrl(`/trace/${trace.traceID}`)}
+                  linkTo={prefixUrl(isEmbed ? `/trace/${trace.traceID}?embed` : `/trace/${trace.traceID}`)}
                   toggleComparison={this.toggleComparison}
                   trace={trace}
+                  disableComparision={disableComparision}
                 />
               </li>
             ))}

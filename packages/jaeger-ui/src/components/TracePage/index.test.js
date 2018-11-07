@@ -13,6 +13,8 @@
 // limitations under the License.
 
 /* eslint-disable import/first */
+import prefixUrl from '../../utils/prefix-url';
+
 jest.mock('./index.track');
 jest.mock('./keyboard-shortcuts');
 jest.mock('./scroll-page');
@@ -149,6 +151,18 @@ describe('<TracePage>', () => {
     expect(scrollManager.destroy.mock.calls).toEqual([[]]);
     expect(resetShortcuts.mock.calls).toEqual([[], []]);
     expect(cancelScroll.mock.calls).toEqual([[]]);
+  });
+
+  it('collapse map if queryparam mapCollapsed', () => {
+    wrapper.setProps({ mapCollapsed: true });
+    expect(wrapper.find(SpanGraph).length).toBe(0);
+  });
+
+  it('open a window when goFullView is called', () => {
+    wrapper.setProps({ id: '12345' });
+    global.open = jest.fn();
+    wrapper.instance().goFullView();
+    expect(global.open).toBeCalledWith(prefixUrl('/trace/12345'), '_blank');
   });
 
   describe('_adjustViewRange()', () => {
@@ -359,6 +373,11 @@ describe('mapStateToProps()', () => {
           [id]: { data: trace, state: fetchedState.DONE },
         },
       },
+      router: {
+        location: {
+          search: '',
+        },
+      },
       config: {
         archiveEnabled: false,
       },
@@ -373,6 +392,10 @@ describe('mapStateToProps()', () => {
     expect(props).toEqual({
       id,
       archiveEnabled: false,
+      isEmbed: false,
+      details: false,
+      minimap: false,
+      mapCollapsed: false,
       archiveTraceState: undefined,
       trace: { data: {}, state: fetchedState.DONE },
     });
