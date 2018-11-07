@@ -136,7 +136,6 @@ export default class SpanBarRow extends React.PureComponent<SpanBarRowProps> {
                 className={`span-svc-name ${isParent && !isChildrenExpanded ? 'is-children-collapsed' : ''}`}
               >
                 {showErrorIcon && <IoAlert className="SpanBarRow--errorIcon" />}
-                {serviceName}{' '}
                 {rpc && (
                   <span>
                     <IoArrowRightA />{' '}

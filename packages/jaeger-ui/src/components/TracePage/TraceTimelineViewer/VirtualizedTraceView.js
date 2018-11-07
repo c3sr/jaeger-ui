@@ -256,8 +256,8 @@ export class VirtualizedTraceViewImpl extends React.PureComponent<VirtualizedTra
   };
 
   renderSpanBarRow(span: Span, spanIndex: number, key: string, style: Style, attrs: {}) {
-    const { spanID } = span;
-    const { serviceName } = span.process;
+    const { spanID , tags} = span;
+    let  {serviceName} = span.process;
     const {
       childrenHiddenIDs,
       childrenToggle,
@@ -268,6 +268,12 @@ export class VirtualizedTraceViewImpl extends React.PureComponent<VirtualizedTra
       spanNameColumnWidth,
       trace,
     } = this.props;
+    for (var id in tags) {
+        const tag = tags[id];
+        if (tag.key === "trace_level") {
+            serviceName = tag.value;
+        }
+    }
     const [zoomStart, zoomEnd] = currentViewRangeTime;
     // to avert flow error
     if (!trace) {
